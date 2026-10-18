@@ -1,0 +1,10 @@
+# recorded data: never publish vehicle clips or pass logs
+data/
+public/
+__pycache__/
+*.pyc
+*.bak*
+*.db
+*.csv
+*.mp4
+*.jpg

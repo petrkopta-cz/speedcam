@@ -1,0 +1,18 @@
+# /etc/systemd/system/speedcam-liveview.service
+[Unit]
+Description=speedcam live camera view with ROI margins (port 8086), started from the setup page
+After=network-online.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+SupplementaryGroups=video
+WorkingDirectory=/home/pi/speedcam
+ExecStart=/usr/bin/python3 /home/pi/speedcam/live_view.py
+Restart=no
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

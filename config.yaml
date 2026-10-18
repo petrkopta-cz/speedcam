@@ -1,0 +1,56 @@
+# =============================================================================
+# speedcam configuration (edit me, then save: the tracker reloads it live)
+# Coordinates are normalized 0.0 .. 1.0 of the full camera frame:
+#   x = 0.0 is the LEFT edge, 1.0 the RIGHT edge
+#   y = 0.0 is the TOP edge,  1.0 the BOTTOM edge
+# =============================================================================
+
+camera:
+  device: 0                # /dev/video0 (bcm2835 mmal V4L2 camera)
+  width: 1280              # requested capture size (sensor native is 1280x960)
+  height: 720
+  fps: 30                  # requested; the Pi may deliver less
+  flip_horizontal: false   # mirror image left<->right
+  flip_vertical: false     # mirror image top<->bottom
+
+# The road section that is measured (green box on calibration_preview.jpg)
+roi_zone:
+  x_start: 0.22            # Left trigger line (near white trailer)
+  x_end: 0.37              # Right trigger line (left of the center tree)
+  y_top: 0.43              # Top of driving lane
+  y_bottom: 0.58           # Bottom of driving lane (above parked car roof near x~0.22)
+
+calibration:
+  zone_length_meters: 8.9   # Real-world distance between the two RED lines (x_start to x_end)
+  speed_limit_kmh: 30.0        # 30 km/h zone: used for "speeders" statistics
+  min_valid_speed_kmh: 10.0    # Below this: pedestrians / foliage, discarded
+  max_valid_speed_kmh: 140.0   # Above this: tracking glitches, discarded
+  calibration_multiplier: 1.0  # Fine-tuning factor (1.0 = no correction)
+
+detection:
+  min_contour_area: 220            # Minimum blob area in pixels to count as a vehicle
+  max_disappeared_frames: 8        # Frames a vehicle may vanish before its track is closed
+  max_centroid_distance_px: 70     # Max pixel jump per frame for the same vehicle
+  min_track_frames: 4              # A track needs at least this many frames to count as a pass
+  min_track_displacement_ratio: 0.45  # Vehicle must travel this fraction of the ROI width
+                                      # (0.45 x 192 px = about 86 px)
+  detection_pad_fraction: 0.25     # Detection runs slightly beyond the red lines so vehicles
+                                   # are already tracked before they reach the zone
+  gate_margin_fraction: 0.10       # Yellow dashed lines on the preview only (10% inside red lines).
+                                   # Timing no longer uses gates; it uses the track regression.
+
+video:
+  enabled: true              # one short MP4 clip per accepted pass (for calibration checks)
+  max_hours: null            # no recording limit (null = keep recording; clips are removed by retention_hours)
+  retention_hours: 4         # clips older than this are deleted automatically (rolling window)
+                             # (start time kept in data/video_started.txt; delete it to restart the 2 h)
+  window_seconds: 12         # clip length: frames buffered before the pass is recorded
+  fps: 10                    # clip frame rate
+  width: 640
+  height: 360
+  bitrate: 1M                # hardware encoder target bitrate
+
+debug:
+  save_snapshots: false             # Save last_detection.jpg (ROI crop + mask) on blob detections.
+                                   # Shows road/plates only in a small crop. Set false when tuning is done.
+  snapshot_min_interval_sec: 1.0   # Max one snapshot per this many seconds (protects the SD card)
